@@ -5,7 +5,7 @@ StarBrilliant's JSFX (Jesusonic Effects) audio plugins
 
 You need a JSFX compatible audio host application. One example is [Reaper](https://www.reaper.fm).
 
-Put the effects into the following path:
+Put the effects into the following path, creating empty folders if needed:
 - `%AppData%\REAPER\Effects\StarBrilliant` (Windows)
 - `~/Library/Application Support/REAPER/Effects/StarBrilliant` (macOS)
 - `~/.config/REAPER/Effects/StarBrilliant` (Linux)
