@@ -5,7 +5,12 @@ StarBrilliant's JSFX (Jesusonic Effects) audio plugins
 
 You need a JSFX compatible audio host application. One example is [Reaper](https://www.reaper.fm).
 
-Put the effects into the path `%AppData%\REAPER\Effects\StarBrilliant` (Windows) or `~/Library/Application Support/REAPER/Effects/StarBrilliant` (macOS) or `~/.config/REAPER/Effects/StarBrilliant` (Linux). Then you will be able to see the plugins under the "JS" type.
+Put the effects into the following path:
+- `%AppData%\REAPER\Effects\StarBrilliant` (Windows)
+- `~/Library/Application Support/REAPER/Effects/StarBrilliant` (macOS)
+- `~/.config/REAPER/Effects/StarBrilliant` (Linux)
+
+Then you will be able to see the plugins under the "JS" type.
 
 ## Live Loudness Normalizer
 
