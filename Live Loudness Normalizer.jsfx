@@ -1,0 +1,229 @@
+/*
+  Live Loudness Normalizer
+  Copyright (c) 2020 Star Brilliant
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
+desc:Live Loudness Normalizer [StarBrilliant]
+slider1:target_lufs=-23<-150,0,0.1>Target Loudness (LUFS)
+slider2:half_life_sec=1<0,10,0.1>Decay Half-life (sec)
+slider3:limit_lufs=-10<-150,0,0.1>Upper Hard Limit (LUFS)
+slider4:inflect_lu=-5<-20,0,0.1>Lower Inflection Level (LU)
+slider5:gate_lufs=-70<-150,0,0.1>Bottom Gate Level (LUFS)
+
+in_pin:left input
+in_pin:right input
+in_pin:center input
+in_pin:lfe input
+in_pin:left surround input
+in_pin:right surround input
+out_pin:left output
+out_pin:right output
+out_pin:center output
+out_pin:lfe output
+out_pin:left surround input
+out_pin:right surround input
+
+@init
+
+function init_ebur128_filter() local(
+  f0, G, Q, K, Vh, Vb, a0,
+  pb0, pb1, pb2, pa0, pa1, pa2,
+  rb0, rb1, rb2, ra0, ra1, ra2
+) (
+  // https://github.com/jiixyj/libebur128/blob/master/ebur128/ebur128.c
+  // MIT License
+
+  f0 = 1681.974450955533;
+  G = 3.999843853973347;
+  Q = 0.7071752369554196;
+
+  K = tan($pi * f0 / srate);
+  Vh = pow(10, G / 20);
+  Vb = pow(Vh, 0.4996667741545416);
+
+  a0 = 1 + K/Q + sqr(K);
+  pb0 = (Vh + Vb*K/Q + sqr(K)) / a0;
+  pb1 = 2 * (K*K - Vh) / a0;
+  pb2 = (Vh - Vb*K/Q + sqr(K)) / a0;
+  pa0 = 1;
+  pa1 = 2 * (sqr(K) - 1) / a0;
+  pa2 = (1 - K/Q + sqr(K)) / a0;
+
+  f0 = 38.13547087602444;
+  Q = 0.5003270373238773;
+  K = tan($pi * f0 / srate);
+
+  rb0 = 1;
+  rb1 = -2;
+  rb2 = 1;
+  ra0 = 1;
+  ra1 = 2 * (sqr(K) - 1) / (1 + K/Q + sqr(K));
+  ra2 = (1 - K/Q + sqr(K)) / (1 + K/Q + sqr(K));
+
+  d.b0 = pb0*rb0;
+  d.b1 = pb0*rb1 + pb1*rb0;
+  d.b2 = pb0*rb2 + pb1*rb1 + pb2*rb0;
+  d.b3 = pb1*rb2 + pb2*rb1;
+  d.b4 = pb2*rb2;
+
+  d.a0 = pa0*ra0;
+  d.a1 = pa0*ra1 + pa1*ra0;
+  d.a2 = pa0*ra2 + pa1*ra1 + pa2*ra0;
+  d.a3 = pa1*ra2 + pa2*ra1;
+  d.a4 = pa2*ra2;
+  
+  0;
+);
+
+function filter_signal() local(
+  offset0, offset1, offset2, offset3, offset4, ch
+) (
+  offset0 = offset.unmixed * num_channels;
+  offset1 = (offset.unmixed + (offset.unmixed < 1 ? filter_length) - 1) * num_channels;
+  offset2 = (offset.unmixed + (offset.unmixed < 2 ? filter_length) - 2) * num_channels;
+  offset3 = (offset.unmixed + (offset.unmixed < 3 ? filter_length) - 3) * num_channels;
+  offset4 = (offset.unmixed + (offset.unmixed < 4 ? filter_length) - 4) * num_channels;
+  array.unfiltered[offset0] = spl0;
+  array.unfiltered[offset0 + 1] = spl1;
+  array.unfiltered[offset0 + 2] = spl2;
+  array.unfiltered[offset0 + 3] = spl3;
+  array.unfiltered[offset0 + 4] = spl4;
+  array.unfiltered[offset0 + 5] = spl5;
+  ch = 0;
+  loop(num_channels,
+    array.filtered[offset0 + ch] = (
+      array.unfiltered[offset0 + ch] * d.b0 +
+      array.unfiltered[offset1 + ch] * d.b1 +
+      array.unfiltered[offset2 + ch] * d.b2 +
+      array.unfiltered[offset3 + ch] * d.b3 +
+      array.unfiltered[offset4 + ch] * d.b4 -
+      array.filtered[offset1 + ch] * d.a1 -
+      array.filtered[offset2 + ch] * d.a2 -
+      array.filtered[offset3 + ch] * d.a3 -
+      array.filtered[offset4 + ch] * d.a4
+    ) / d.a0;
+    ch += 1;
+  );
+  array.mixed[offset.mixed] =
+    sqr(array.filtered[offset0]) +            // Left
+    sqr(array.filtered[offset0 + 1]) +        // Right
+    sqr(array.filtered[offset0 + 2]) +        // Center
+    // 0 +                                    // LFE
+    sqr(array.filtered[offset0 + 4]) * 1.41 + // Left surround
+    sqr(array.filtered[offset0 + 5]) * 1.41;  // Right surround
+);
+
+function momentary_loudness_db() local(
+  i, sum
+) (
+  i = 0;
+  sum = 0;
+  loop(buffer_length,
+    sum += array.mixed[i];
+    i += 1;
+  );
+  log10(sum / max(i, 1)) * 10 - 0.691;
+);
+
+ext_nodenorm = 1;
+num_channels = 6;
+momentary_lufs = target_lufs;
+gain_db = 0;
+filter_length = 5;
+// Buffer 400ms for momentary loudness measurement
+buffer_length = max(floor(srate * 0.4 + 0.5), 1);
+// Measure every 100ms (75% overlap)
+measure_length = max(floor(srate * 0.1 + 0.5), 1);
+array.unfiltered = 0;
+array.filtered = filter_length * num_channels;
+array.mixed = array.filtered + filter_length * num_channels;
+array.length = array.mixed + buffer_length;
+offset.unmixed = 0;
+offset.mixed = 0;
+offset.measure = 0;
+memset(0, 0, array.length);
+freembuf(array.length + 1);
+init_ebur128_filter();
+
+@sample
+
+filter_signal();
+offset.unmixed += 1;
+offset.unmixed >= filter_length ? offset.unmixed = 0;
+offset.mixed += 1;
+offset.mixed >= buffer_length ? offset.mixed = 0;
+offset.measure += 1;
+offset.measure >= measure_length ? (
+  offset.measure = 0;
+  momentary_lufs = momentary_loudness_db();
+);
+diff_lu = (momentary_lufs > gate_lufs ? target_lufs - momentary_lufs) - gain_db;
+gain_db += diff_lu * min(
+  (diff_lu > 0 && inflect_lu >= -149.9 ?
+    sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) : 1) *
+  (log(2) / (half_life_sec * srate)), 1);
+gain_db = min(gain_db, limit_lufs - momentary_lufs);
+
+gain = pow(10, gain_db * 0.05);
+spl0 *= gain;
+spl1 *= gain;
+spl2 *= gain;
+spl3 *= gain;
+spl4 *= gain;
+spl5 *= gain;
+
+@gfx 480 64
+
+function db_to_pixel(db) (
+  gfx_w * (db + 64) / 128;
+);
+
+function gfx_rect_abs(x y x2 y2) (
+  x = floor(x + 0.5);
+  y = floor(y + 0.5);
+  x2 = floor(x2 + 0.5);
+  y2 = floor(y2 + 0.5);
+  gfx_rect(x, y, x2 - x, y2 - y);
+);
+
+gfx_clear = 0;
+gfx_set(0.724);
+gfx_setfont(2, "MS Shell Dlg 2", 12);
+gui_mark_db = -60;
+loop(21,
+  gui_mark_px = db_to_pixel(gui_mark_db);
+  gfx_line(gui_mark_px, gfx_h/2 - 12, gui_mark_px, gfx_h/2 - 8, 1);
+  gfx_line(gui_mark_px, gfx_h/2 + 8, gui_mark_px, gfx_h/2 + 12, 1);
+  gfx_x = gui_mark_px;
+  gfx_y = gfx_h/2 + 12;
+  sprintf(#gui_mark, "%d", gui_mark_db);
+  gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
+  gui_mark_db += 6;
+);
+
+gfx_set(0, 0.59, 0);
+gfx_rect_abs(db_to_pixel(min(gain_db, 0)), gfx_h/2 - 8, db_to_pixel(max(gain_db, 0)), gfx_h/2 + 8);
+
+gfx_set(0.724);
+gfx_setfont(1, "MS Shell Dlg", 14);
+gfx_x = 4;
+gfx_y = max(gfx_h/2 - 16, 0);
+gfx_drawstr("Gain (dB)", $x108, gfx_x, gfx_y);
