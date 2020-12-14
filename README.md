@@ -40,7 +40,7 @@ There are five parameters:
 
 5. **Bottom Gate Level (LUFS)**, default -60 LUFS.
 
-   When the measured Momentary Loudness is below this level, the algorithm treats the signal as silence, either between two songs, or when no one is speaking. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
+   When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
 
 ## Licenses
 
