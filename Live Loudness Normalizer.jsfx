@@ -226,5 +226,5 @@ gfx_set(0.724);
 gfx_setfont(1, "MS Shell Dlg", 14);
 gfx_x = 4;
 gfx_y = max(gfx_h/2 - 16, 0);
-sprintf(#gui_gain, "Gain: +%.1f dB", gain_db);
+sprintf(#gui_gain, "Gain: %+.1f dB", gain_db);
 gfx_drawstr(#gui_gain, $x108, gfx_x, gfx_y);
