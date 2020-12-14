@@ -180,7 +180,7 @@ gain_db += diff_lu * min(
   (diff_lu > 0 && inflect_lu >= -149.95 ?
     sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) : 1) *
   (log(2) / (half_life_sec * srate)), 1);
-gain_db = min(gain_db, limit_lufs - momentary_lufs);
+gain_db = min(max(gain_db, gate_lufs), limit_lufs - momentary_lufs);
 
 gain = pow(10, gain_db * 0.05);
 spl0 *= gain;
