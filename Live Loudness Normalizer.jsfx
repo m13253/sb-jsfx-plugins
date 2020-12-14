@@ -89,7 +89,7 @@ function init_ebur128_filter() local(
   d.a2 = pa0*ra2 + pa1*ra1 + pa2*ra0;
   d.a3 = pa1*ra2 + pa2*ra1;
   d.a4 = pa2*ra2;
-  
+
   0;
 );
 
@@ -131,7 +131,7 @@ function filter_signal() local(
     sqr(array.filtered[offset0 + 5]) * 1.41;  // Right surround
 );
 
-function momentary_loudness_db() local(
+function measure_momentary_loudness_lufs() local(
   i, sum
 ) (
   i = 0;
@@ -173,7 +173,7 @@ offset.mixed >= buffer_length ? offset.mixed = 0;
 offset.measure += 1;
 offset.measure >= measure_length ? (
   offset.measure = 0;
-  momentary_lufs = momentary_loudness_db();
+  momentary_lufs = measure_momentary_loudness_lufs();
 );
 diff_lu = (momentary_lufs > gate_lufs ? target_lufs - momentary_lufs) - gain_db;
 gain_db += diff_lu * min(
