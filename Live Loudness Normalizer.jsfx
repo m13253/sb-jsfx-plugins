@@ -25,7 +25,7 @@ desc:Live Loudness Normalizer [StarBrilliant]
 slider1:target_lufs=-23<-150,0,0.1>Target Loudness (LUFS)
 slider2:half_life_sec=1<0,10,0.1>Decay Half-life (sec)
 slider3:limit_lufs=-10<-150,0,0.1>Upper Hard Limit (LUFS)
-slider4:inflect_lu=-5<-70,0,0.1>Lower Inflection Level (LU)
+slider4:inflect_lu=-20<-70,0,0.1>Lower Inflection Level (LU)
 slider5:gate_lufs=-70<-150,0,0.1>Bottom Gate Level (LUFS)
 
 in_pin:left input
