@@ -177,7 +177,7 @@ offset.measure >= measure_length ? (
 );
 diff_lu = (momentary_lufs > gate_lufs ? target_lufs - momentary_lufs) - gain_db;
 gain_db += diff_lu * min(
-  (diff_lu > 0 && inflect_lu >= -149.95 ?
+  (diff_lu > 0 && inflect_lu < -0.05 ?
     sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) : 1) *
   (log(2) / (half_life_sec * srate)), 1);
 gain_db = min(max(gain_db, gate_lufs), limit_lufs - momentary_lufs);
