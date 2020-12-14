@@ -150,8 +150,8 @@ gain_db = 0;
 filter_length = 5;
 // Buffer 400ms for momentary loudness measurement
 buffer_length = max(floor(srate * 0.4 + 0.5), 1);
-// Measure every 100ms (75% overlap)
-measure_length = max(floor(srate * 0.1 + 0.5), 1);
+// Measure every 50ms (87.5% overlap)
+measure_length = max(floor(srate * 0.05 + 0.5), 1);
 array.unfiltered = 0;
 array.filtered = filter_length * num_channels;
 array.mixed = array.filtered + filter_length * num_channels;
