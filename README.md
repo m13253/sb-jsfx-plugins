@@ -24,23 +24,23 @@ There are five parameters:
 
 1. **Target Loudness (LUFS)**, default is -23 LUFS.
 
-   The higher this value, the louder output will be.
+   The higher this value, the louder output will be. The standard loudness for television and radio is -23 LUFS, for YouTube and Spotify is -14 LUFS. If you are mastering for a background music, set this 20 LU lower than your foreground speech.
 
 2. **Decay Half-life (sec)**, default is 1 second.
 
-   The higher this value, the slower gain adjustment will be.
+   The gain adjustment follows an exponential decay curve. The higher this value, the slower gain adjustment will be.
 
 3. **Upper Hard Limit (LUFS)**, default is -10 LUFS.
 
-   This is a hard limit to prevent sudden shock. Do not try to rely on this, or the audio quality will be dramatically damaged.
+   This is a hard limit to prevent sudden shock. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
 
-4. **Lower Inflection Level (LU)**, default is -5 LU.
+4. **Lower Inflection Level (LU)**, default is -10 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + -5 LU = -28 LUFS). The changing rate decreases instead of increasing when the Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent audiences from being shocked.
+   This value is added to Target Loudness (e.g. -23 LUFS + -10 LU = -33 LUFS). The changing rate decreases instead of increasing when the Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent audiences from being shocked.
 
-5. **Bottom Gate Level (LUFS)**, default -70 LUFS.
+5. **Bottom Gate Level (LUFS)**, default -60 LUFS.
 
-   When the Momentary Loudness is below this level, the algorithm treats the signal as silence, either between two songs, or when no one is speaking.
+   When the Momentary Loudness is below this level, the algorithm treats the signal as silence, either between two songs, or when no one is speaking. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
 
 ## Licenses
 
