@@ -18,7 +18,7 @@ If you are more comfortable using another DAW instead of Reaper, you can also lo
 
 This plugin is used for live audio streaming. A typical scenario is a live program with music and speech, but the loudness is changing rapidly so it is hard to predict or adjust the volume. Other loudness normalizer may not be able to handle realtime situation. Therefore, I wrote this plugin.
 
-The algorithm determines the current Momentary Loudness, and compare it with the Target Loudness. When the difference between these values are high, the algorithm tries to adjust the gain at a higher rate. When the difference gradually approaches to zero, the rate of change also decreases to maintain audio quality and dynamic range. Additionally, special care is taken to handle the quiet sections and the silence between songs.
+The algorithm measures the current Momentary Loudness, and compare it with the Target Loudness. When the difference between these values are high, the algorithm tries to adjust the gain at a higher rate. When the difference gradually approaches to zero, the rate of change also decreases to maintain audio quality and dynamic range. Additionally, special care is taken to handle the quiet sections and the silence between songs.
 
 There are five parameters:
 
@@ -36,11 +36,11 @@ There are five parameters:
 
 4. **Lower Inflection Level (LU)**, default is -10 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + -10 LU = -33 LUFS). The changing rate decreases instead of increasing when the Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent audiences from being shocked.
+   This value is added to Target Loudness (e.g. -23 LUFS + -10 LU = -33 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent audiences from being shocked.
 
 5. **Bottom Gate Level (LUFS)**, default -60 LUFS.
 
-   When the Momentary Loudness is below this level, the algorithm treats the signal as silence, either between two songs, or when no one is speaking. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
+   When the measured Momentary Loudness is below this level, the algorithm treats the signal as silence, either between two songs, or when no one is speaking. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
 
 ## Licenses
 
