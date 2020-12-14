@@ -22,19 +22,24 @@ The algorithm determines the current Momentary Loudness, and compare it with the
 
 There are five parameters:
 
-1. Target Loudness (LUFS), default is -23 LUFS.
+1. **Target Loudness (LUFS)**, default is -23 LUFS.
+
    The higher this value, the louder output will be.
 
-2. Decay Half-life (sec), default is 1 second.
+2. **Decay Half-life (sec)**, default is 1 second.
+
    The higher this value, the slower gain adjustment will be.
 
-3. Upper Hard Limit (LUFS), default is -10 LUFS.
+3. **Upper Hard Limit (LUFS)**, default is -10 LUFS.
+
    This is a hard limit to prevent sudden shock. Do not try to rely on this, or the audio quality will be dramatically damaged.
 
-4. Lower Inflection Level (LU), default is -5 LU.
+4. **Lower Inflection Level (LU)**, default is -5 LU.
+
    This value is added to Target Loudness (e.g. -23 LUFS + -5 LU = -28 LUFS). The changing rate decreases instead of increasing when the Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent audiences from being shocked.
 
-5. Bottom Gate Level (LUFS), default -70 LUFS.
+5. **Bottom Gate Level (LUFS)**, default -70 LUFS.
+
    When the Momentary Loudness is below this level, the algorithm treats the signal as silence, either between two songs, or when no one is speaking.
 
 ## Licenses
