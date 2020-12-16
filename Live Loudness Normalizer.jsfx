@@ -32,14 +32,18 @@ in_pin:left input
 in_pin:right input
 in_pin:center input
 in_pin:lfe input
-in_pin:left surround input
-in_pin:right surround input
+in_pin:rear left input
+in_pin:rear right input
+in_pin:side left input
+in_pin:side right input
 out_pin:left output
 out_pin:right output
 out_pin:center output
 out_pin:lfe output
-out_pin:left surround input
-out_pin:right surround input
+out_pin:rear left input
+out_pin:rear right input
+out_pin:side left input
+out_pin:side right input
 
 @init
 
@@ -107,6 +111,8 @@ function filter_signal() local(
   array.unfiltered[offset0 + 3] = spl3;
   array.unfiltered[offset0 + 4] = spl4;
   array.unfiltered[offset0 + 5] = spl5;
+  array.unfiltered[offset0 + 6] = spl6;
+  array.unfiltered[offset0 + 7] = spl7;
   ch = 0;
   loop(num_channels,
     array.filtered[offset0 + ch] = (
@@ -127,8 +133,10 @@ function filter_signal() local(
     sqr(array.filtered[offset0 + 1]) +        // Right
     sqr(array.filtered[offset0 + 2]) +        // Center
     // 0 +                                    // LFE
-    sqr(array.filtered[offset0 + 4]) * 1.41 + // Left surround
-    sqr(array.filtered[offset0 + 5]) * 1.41;  // Right surround
+    sqr(array.filtered[offset0 + 4]) * 1.41 + // Rear Left
+    sqr(array.filtered[offset0 + 5]) * 1.41 + // Rear Right
+    sqr(array.filtered[offset0 + 6]) * 1.41 + // Side Left
+    sqr(array.filtered[offset0 + 7]) * 1.41;  // Side Right
 );
 
 function measure_momentary_loudness_lufs() local(
@@ -144,14 +152,14 @@ function measure_momentary_loudness_lufs() local(
 );
 
 ext_nodenorm = 1;
-num_channels = 6;
+num_channels = 8;
 momentary_lufs = target_lufs;
 gain_db = 0;
 filter_length = 5;
 // Buffer 400ms for momentary loudness measurement
 buffer_length = max(floor(srate * 0.4 + 0.5), 1);
-// Measure every 50ms (87.5% overlap)
-measure_length = max(floor(srate * 0.05 + 0.5), 1);
+// Measure every 30ms
+measure_interval = max(floor(srate * 0.03 + 0.5), 1);
 array.unfiltered = 0;
 array.filtered = filter_length * num_channels;
 array.mixed = array.filtered + filter_length * num_channels;
@@ -171,7 +179,7 @@ offset.unmixed >= filter_length ? offset.unmixed = 0;
 offset.mixed += 1;
 offset.mixed >= buffer_length ? offset.mixed = 0;
 offset.measure += 1;
-offset.measure >= measure_length ? (
+offset.measure >= measure_interval ? (
   offset.measure = 0;
   momentary_lufs = measure_momentary_loudness_lufs();
 );
@@ -189,6 +197,8 @@ spl2 *= gain;
 spl3 *= gain;
 spl4 *= gain;
 spl5 *= gain;
+spl6 *= gain;
+spl7 *= gain;
 
 @gfx 480 64
 
