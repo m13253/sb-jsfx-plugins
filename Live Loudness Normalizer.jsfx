@@ -31,7 +31,7 @@ slider5:gate_lufs=-60<-150,0,0.1>Bottom Gate Level (LUFS)
 in_pin:left input
 in_pin:right input
 in_pin:center input
-in_pin:lfe input
+in_pin:LFE input
 in_pin:rear left input
 in_pin:rear right input
 in_pin:side left input
@@ -39,7 +39,7 @@ in_pin:side right input
 out_pin:left output
 out_pin:right output
 out_pin:center output
-out_pin:lfe output
+out_pin:LFE output
 out_pin:rear left input
 out_pin:rear right input
 out_pin:side left input
