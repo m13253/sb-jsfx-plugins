@@ -34,9 +34,9 @@ There are five parameters:
 
    This value is added to Target Loudness (e.g. -23 LUFS + +13 LU = -10 LUFS). This is a hard limit to prevent sudden shock. -10 LUFS is roughly the same loudness as a 1000 Hz sine wave with -1 dBFS peak level. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
 
-4. **Lower Inflection Level (LU)**, default is -6.5 LU.
+4. **Lower Inflection Level (LU)**, default is -6 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + -6.5 LU = -29.5 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent sudden loudness increase.
+   This value is added to Target Loudness (e.g. -23 LUFS + -6 LU = -29 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent sudden loudness increase.
 
 5. **Bottom Gate Level (LUFS)**, default -48 LUFS.
 
