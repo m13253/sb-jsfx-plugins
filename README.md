@@ -26,21 +26,21 @@ There are five parameters:
 
    The higher this value, the louder output will be. The standard loudness for television and radio is -23 LUFS, for YouTube and Spotify is -14 LUFS. If you are mastering for a background music, set this 20 LU lower than your foreground speech.
 
-2. **Decay Half-life (sec)**, default is 1 second.
+2. **Decay Half-life (sec)**, default is 3 second.
 
    The gain adjustment follows an exponential decay curve. The higher this value, the slower gain adjustment will be.
 
-3. **Upper Hard Limit (LUFS)**, default is -10 LUFS.
+3. **Upper Hard Limit (LU)**, default is +13 LU.
 
-   This is a hard limit to prevent sudden shock. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
+   This value is added to Target Loudness (e.g. -23 LUFS + +13 LU = -10 LUFS). This is a hard limit to prevent sudden shock. -10 LUFS is roughly the same loudness as a 1000 Hz sine wave with -1 dBFS peak level. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
 
-4. **Lower Inflection Level (LU)**, default is -10 LU.
+4. **Lower Inflection Level (LU)**, default is -6.5 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + -10 LU = -33 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent audiences from being shocked.
+   This value is added to Target Loudness (e.g. -23 LUFS + -6.5 LU = -29.5 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent sudden loudness increase.
 
-5. **Bottom Gate Level (LUFS)**, default -60 LUFS.
+5. **Bottom Gate Level (LU)**, default -13 LU.
 
-   When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
+   This value is added to Target Loudness (e.g. -23 LUFS + -13 LU = -36 LUFS). When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
 
 ## Licenses
 
