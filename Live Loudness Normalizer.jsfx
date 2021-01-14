@@ -152,6 +152,7 @@ function measure_momentary_loudness_lufs() local(
 );
 
 ext_nodenorm = 1;
+gfx_ext_retina = 1;
 num_channels = 8;
 momentary_lufs = target_lufs;
 gain_db = 0;
@@ -216,25 +217,25 @@ function gfx_rect_abs(x y x2 y2) (
 
 gfx_clear = 0;
 gfx_set(0.724);
-gfx_setfont(2, "MS Shell Dlg 2", 12);
+gfx_setfont(2, "MS Shell Dlg 2", 12 * gfx_ext_retina);
 gui_mark_db = -60;
 loop(21,
   gui_mark_px = db_to_pixel(gui_mark_db);
-  gfx_line(gui_mark_px, ceil(gfx_h/2 - 12), gui_mark_px, ceil(gfx_h/2 - 8) - 1, 1);
-  gfx_line(gui_mark_px, floor(gfx_h/2 + 8), gui_mark_px, floor(gfx_h/2 + 12) - 1, 1);
+  gfx_line(gui_mark_px, ceil(gfx_h/2 - 12*gfx_ext_retina), gui_mark_px, ceil(gfx_h/2 - 8*gfx_ext_retina) - 1, 1);
+  gfx_line(gui_mark_px, floor(gfx_h/2 + 8*gfx_ext_retina), gui_mark_px, floor(gfx_h/2 + 12*gfx_ext_retina) - 1, 1);
   gfx_x = gui_mark_px;
-  gfx_y = gfx_h/2 + 12;
+  gfx_y = gfx_h/2 + 12*gfx_ext_retina;
   sprintf(#gui_mark, "%d", gui_mark_db);
   gfx_drawstr(#gui_mark, $x101, gfx_x + 1, gfx_y);
   gui_mark_db += 6;
 );
 
 gfx_set(0, 0.59, 0);
-gfx_rect_abs(db_to_pixel(min(gain_db, 0)), ceil(gfx_h/2 - 8), db_to_pixel(max(gain_db, 0)) + 1, floor(gfx_h/2 + 8));
+gfx_rect_abs(db_to_pixel(min(gain_db, 0)), ceil(gfx_h/2 - 8*gfx_ext_retina), db_to_pixel(max(gain_db, 0)) + 1, floor(gfx_h/2 + 8*gfx_ext_retina));
 
 gfx_set(0.724);
-gfx_setfont(1, "MS Shell Dlg", 14);
-gfx_x = 4;
-gfx_y = max(gfx_h/2 - 16, 0);
+gfx_setfont(1, "MS Shell Dlg", 14 * gfx_ext_retina);
+gfx_x = 4 * gfx_ext_retina;
+gfx_y = max(gfx_h/2 - 16 * gfx_ext_retina, 0);
 sprintf(#gui_gain, "Gain: %+.1f dB", gain_db);
 gfx_drawstr(#gui_gain, $x108, gfx_x, gfx_y);
