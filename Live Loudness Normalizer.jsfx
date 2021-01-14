@@ -203,39 +203,79 @@ spl7 *= gain;
 
 @gfx 480 64
 
+function gfx_rect_aa(x y x2 y2) local(
+  left, left_int, right, right_int,
+  top, top_int, bottom, bottom_int,
+  fg_r, fg_g, fg_b, fg_a, bg_r, bg_g, bg_b
+) (
+  left = min(x, x2);
+  right = max(x, x2);
+  top = min(y, y2);
+  bottom = max(y, y2);
+  left_int = max(floor(left), 0);
+  right_int = min(ceil(right), gfx_w);
+  top_int = max(floor(top), 0);
+  bottom_int = min(ceil(bottom), gfx_h);
+  fg_r = gfx_r <= 0.040449936 ? gfx_r / 12.92 : ((gfx_r+0.055) / 1.055) ^ 2.4;
+  fg_g = gfx_g <= 0.040449936 ? gfx_g / 12.92 : ((gfx_g+0.055) / 1.055) ^ 2.4;
+  fg_b = gfx_b <= 0.040449936 ? gfx_b / 12.92 : ((gfx_b+0.055) / 1.055) ^ 2.4;
+
+  gfx_y = top_int;
+  loop(bottom_int - top_int,
+    gfx_x = left_int;
+    loop(right_int - left_int,
+      fg_a = gfx_a * (min(gfx_x + 1, right) - max(gfx_x, left)) * (min(gfx_y + 1, bottom) - max(gfx_y, top));
+      gfx_getpixel(bg_r, bg_g, bg_b);
+      bg_r = bg_r <= 0.040449936 ? bg_r / 12.92 : ((bg_r+0.055) / 1.055) ^ 2.4;
+      bg_g = bg_g <= 0.040449936 ? bg_g / 12.92 : ((bg_g+0.055) / 1.055) ^ 2.4;
+      bg_b = bg_b <= 0.040449936 ? bg_b / 12.92 : ((bg_b+0.055) / 1.055) ^ 2.4;
+      bg_r = bg_r * (1 - fg_a) + fg_r * fg_a;
+      bg_g = bg_g * (1 - fg_a) + fg_g * fg_a;
+      bg_b = bg_b * (1 - fg_a) + fg_b * fg_a;
+      bg_r = bg_r <= 0.0031308 ? bg_r * 12.92 : 1.055 * bg_r^(1/2.4) - 0.055;
+      bg_g = bg_g <= 0.0031308 ? bg_g * 12.92 : 1.055 * bg_g^(1/2.4) - 0.055;
+      bg_b = bg_b <= 0.0031308 ? bg_b * 12.92 : 1.055 * bg_b^(1/2.4) - 0.055;
+      gfx_setpixel(bg_r, bg_g, bg_b);
+      gfx_x += 1;
+    );
+    gfx_y += 1;
+  );
+);
+
 function db_to_pixel(db) (
   gfx_w * (db + 64) / 128;
 );
 
-function gfx_rect_abs(x y x2 y2) (
-  x = floor(x + 0.5);
-  y = floor(y + 0.5);
-  x2 = floor(x2 + 0.5);
-  y2 = floor(y2 + 0.5);
-  gfx_rect(x, y, x2 - x, y2 - y);
-);
-
 gfx_clear = 0;
+// Force the clear operation to complete,
+// prevents gfx_getpixel from misbehaving.
+gfx_setpixel(0, 0, 0);
+
 gfx_set(0.724);
 gfx_setfont(2, "MS Shell Dlg 2", 12 * gfx_ext_retina);
 gui_mark_db = -60;
 loop(21,
   gui_mark_px = db_to_pixel(gui_mark_db);
-  gfx_line(gui_mark_px, ceil(gfx_h/2 - 12*gfx_ext_retina), gui_mark_px, ceil(gfx_h/2 - 8*gfx_ext_retina) - 1, 1);
-  gfx_line(gui_mark_px, floor(gfx_h/2 + 8*gfx_ext_retina), gui_mark_px, floor(gfx_h/2 + 12*gfx_ext_retina) - 1, 1);
-  gfx_x = gui_mark_px;
-  gfx_y = gfx_h/2 + 12*gfx_ext_retina;
+  gui_mark_db != 0 ? (
+    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina);
+    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+  ) : (
+    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 - 8*gfx_ext_retina);
+    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 + 8*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+  );
+  gfx_x = floor(gui_mark_px + 0.5);
+  gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
   sprintf(#gui_mark, "%d", gui_mark_db);
-  gfx_drawstr(#gui_mark, $x101, gfx_x + 1, gfx_y);
+  gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
   gui_mark_db += 6;
 );
 
 gfx_set(0, 0.59, 0);
-gfx_rect_abs(db_to_pixel(min(gain_db, 0)), ceil(gfx_h/2 - 8*gfx_ext_retina), db_to_pixel(max(gain_db, 0)) + 1, floor(gfx_h/2 + 8*gfx_ext_retina));
+gfx_rect_aa(min(db_to_pixel(gain_db), gfx_w/2 - 0.5*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(db_to_pixel(gain_db), gfx_w/2 + 0.5*gfx_ext_retina), gfx_h/2 + 8*gfx_ext_retina);
 
 gfx_set(0.724);
 gfx_setfont(1, "MS Shell Dlg", 14 * gfx_ext_retina);
-gfx_x = 4 * gfx_ext_retina;
-gfx_y = max(gfx_h/2 - 16 * gfx_ext_retina, 0);
+gfx_x = floor(4 * gfx_ext_retina + 0.5);
+gfx_y = floor(gfx_h/2 - 16 * gfx_ext_retina + 0.5);
 sprintf(#gui_gain, "Gain: %+.1f dB", gain_db);
 gfx_drawstr(#gui_gain, $x108, gfx_x, gfx_y);
