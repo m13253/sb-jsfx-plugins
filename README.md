@@ -38,9 +38,9 @@ There are five parameters:
 
    This value is added to Target Loudness (e.g. -23 LUFS + -6.5 LU = -29.5 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent sudden loudness increase.
 
-5. **Bottom Gate Level (LU)**, default -13 LU.
+5. **Bottom Gate Level (LUFS)**, default -48 LUFS.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + -13 LU = -36 LUFS). When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
+   When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
 
 ## Licenses
 

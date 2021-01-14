@@ -26,7 +26,7 @@ slider1:target_lufs=-23<-60,0,0.1>Target Loudness (LUFS)
 slider2:half_life_sec=3<0,10,0.1>Decay Half-life (sec)
 slider3:limit_lu=13<0,24,0.1>Upper Hard Limit (LU)
 slider4:inflect_lu=-6.5<-24,0,0.1>Lower Inflection Level (LU)
-slider5:gate_lu=-13<-24,0,0.1>Bottom Gate Level (LU)
+slider5:gate_lufs=-48<-60,0,0.1>Bottom Gate Level (LUFS)
 
 in_pin:left input
 in_pin:right input
@@ -184,12 +184,12 @@ offset.measure >= measure_interval ? (
   offset.measure = 0;
   momentary_lufs = measure_momentary_loudness_lufs();
 );
-diff_lu = (momentary_lufs > target_lufs + gate_lu ? target_lufs - momentary_lufs) - gain_db;
+diff_lu = (momentary_lufs > gate_lufs ? target_lufs - momentary_lufs) - gain_db;
 gain_db += diff_lu * min(
   (diff_lu > 0 && inflect_lu < -0.05 ?
     sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) : 1) *
   (log(2) / (half_life_sec * srate)), 1);
-gain_db = min(max(gain_db, target_lufs + gate_lu), target_lufs + limit_lu - momentary_lufs);
+gain_db = min(max(gain_db, gate_lufs), target_lufs + limit_lu - momentary_lufs);
 
 gain = pow(10, gain_db * 0.05);
 spl0 *= gain;
