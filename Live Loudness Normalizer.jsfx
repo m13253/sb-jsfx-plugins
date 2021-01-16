@@ -201,7 +201,7 @@ spl5 *= gain;
 spl6 *= gain;
 spl7 *= gain;
 
-@gfx 480 64
+@gfx 520 64
 
 function gfx_rect_aa(x y x2 y2) local(
   left, left_int, right, right_int,
@@ -243,7 +243,7 @@ function gfx_rect_aa(x y x2 y2) local(
 );
 
 function db_to_pixel(db) (
-  gfx_w * (db + 64) / 128;
+  gfx_w * (db + 37.5) / 75;
 );
 
 gfx_clear = 0;
@@ -251,31 +251,56 @@ gfx_clear = 0;
 // prevents gfx_getpixel from misbehaving.
 gfx_setpixel(0, 0, 0);
 
-gfx_set(0.724);
-gfx_setfont(2, "MS Shell Dlg 2", 12 * gfx_ext_retina);
-gui_mark_db = -60;
-loop(21,
-  gui_mark_px = db_to_pixel(gui_mark_db);
-  gui_mark_db != 0 ? (
+gfx_set(0.943);
+gfx_setfont(2, "MS Shell Dlg 2", 11 * gfx_ext_retina);
+
+gui_mark_db = 0;
+gui_mark_skip = 25 * 18*gfx_ext_retina / gfx_w;
+loop(12,
+  gui_mark_db -= 3;
+  gui_mark_skip -= 1;
+  gui_mark_skip <= 0 ? (
+    gui_mark_skip = 25 * 18*gfx_ext_retina / gfx_w;
+    gui_mark_px = db_to_pixel(gui_mark_db);
     gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina);
     gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
-  ) : (
-    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 - 8*gfx_ext_retina);
-    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 + 8*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+    gfx_x = floor(gui_mark_px + 0.5);
+    gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
+    sprintf(#gui_mark, "%+d", gui_mark_db);
+    gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
   );
-  gfx_x = floor(gui_mark_px + 0.5);
-  gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
-  sprintf(#gui_mark, "%d", gui_mark_db);
-  gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
-  gui_mark_db += 6;
 );
 
-gfx_set(0, 0.59, 0);
+gui_mark_px = db_to_pixel(0);
+gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 - 8*gfx_ext_retina);
+gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 + 8*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+gfx_x = floor(gui_mark_px + 0.5);
+gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
+gfx_drawstr("0", $x101, gfx_x, gfx_y);
+
+gui_mark_db = 0;
+gui_mark_skip = 25 * 18*gfx_ext_retina / gfx_w;
+loop(12,
+  gui_mark_db += 3;
+  gui_mark_skip -= 1;
+  gui_mark_skip <= 0 ? (
+    gui_mark_skip = 25 * 18*gfx_ext_retina / gfx_w;
+    gui_mark_px = db_to_pixel(gui_mark_db);
+    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina);
+    gfx_rect_aa(gui_mark_px - 0.5*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina, gui_mark_px + 0.5*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+    gfx_x = floor(gui_mark_px + 0.5);
+    gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
+    sprintf(#gui_mark, "%+d", gui_mark_db);
+    gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
+  );
+);
+
+gfx_set(0.167, 0.661, 0.457);
 gfx_rect_aa(min(db_to_pixel(gain_db), gfx_w/2 - 0.5*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(db_to_pixel(gain_db), gfx_w/2 + 0.5*gfx_ext_retina), gfx_h/2 + 8*gfx_ext_retina);
 
-gfx_set(0.724);
-gfx_setfont(1, "MS Shell Dlg", 14 * gfx_ext_retina);
+gfx_set(0.943);
+gfx_setfont(1, "MS Shell Dlg", 12 * gfx_ext_retina);
 gfx_x = floor(4 * gfx_ext_retina + 0.5);
-gfx_y = floor(gfx_h/2 - 16 * gfx_ext_retina + 0.5);
+gfx_y = floor(min(gfx_h/2 - 16 * gfx_ext_retina, 16 * gfx_ext_retina) + 0.5);
 sprintf(#gui_gain, "Gain: %+.1f dB", gain_db);
 gfx_drawstr(#gui_gain, $x108, gfx_x, gfx_y);
