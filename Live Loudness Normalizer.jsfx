@@ -159,8 +159,9 @@ gain_db = 0;
 filter_length = 5;
 // Buffer 400ms for momentary loudness measurement
 buffer_length = max(floor(srate * 0.4 + 0.5), 1);
-// Measure every 30ms
-measure_interval = max(floor(srate * 0.03 + 0.5), 1);
+// Measure every 5ms
+// (Humans need a minimum of about 0.01 to 0.02 second of auditory experience to perceive duration)
+measure_interval = max(floor(srate * 0.005 + 0.5), 1);
 array.unfiltered = 0;
 array.filtered = filter_length * num_channels;
 array.mixed = array.filtered + filter_length * num_channels;
@@ -187,8 +188,11 @@ offset.measure >= measure_interval ? (
 diff_lu = (momentary_lufs > gate_lufs ? target_lufs - momentary_lufs) - gain_db;
 gain_db += diff_lu * min(
   (diff_lu > 0 && inflect_lu < -0.05 ?
-    sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) : 1) *
-  (log(2) / (half_life_sec * srate)), 1);
+    sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) :
+    1
+  ) * (log(2) / (half_life_sec * srate)),
+  (offset.measure + 1) / measure_interval
+);
 gain_db = min(max(gain_db, gate_lufs), target_lufs + limit_lu - momentary_lufs);
 
 gain = pow(10, gain_db * 0.05);
@@ -216,9 +220,9 @@ function gfx_rect_aa(x y x2 y2) local(
   right_int = min(ceil(right), gfx_w);
   top_int = max(floor(top), 0);
   bottom_int = min(ceil(bottom), gfx_h);
-  fg_r = gfx_r <= 0.040449936 ? gfx_r / 12.92 : ((gfx_r+0.055) / 1.055) ^ 2.4;
-  fg_g = gfx_g <= 0.040449936 ? gfx_g / 12.92 : ((gfx_g+0.055) / 1.055) ^ 2.4;
-  fg_b = gfx_b <= 0.040449936 ? gfx_b / 12.92 : ((gfx_b+0.055) / 1.055) ^ 2.4;
+  fg_r = gfx_r <= 0.040449936 ? gfx_r / 12.92 : pow((gfx_r+0.055) / 1.055, 2.4);
+  fg_g = gfx_g <= 0.040449936 ? gfx_g / 12.92 : pow((gfx_g+0.055) / 1.055, 2.4);
+  fg_b = gfx_b <= 0.040449936 ? gfx_b / 12.92 : pow((gfx_b+0.055) / 1.055, 2.4);
 
   gfx_y = top_int;
   loop(bottom_int - top_int,
@@ -226,15 +230,15 @@ function gfx_rect_aa(x y x2 y2) local(
     loop(right_int - left_int,
       fg_a = gfx_a * (min(gfx_x + 1, right) - max(gfx_x, left)) * (min(gfx_y + 1, bottom) - max(gfx_y, top));
       gfx_getpixel(bg_r, bg_g, bg_b);
-      bg_r = bg_r <= 0.040449936 ? bg_r / 12.92 : ((bg_r+0.055) / 1.055) ^ 2.4;
-      bg_g = bg_g <= 0.040449936 ? bg_g / 12.92 : ((bg_g+0.055) / 1.055) ^ 2.4;
-      bg_b = bg_b <= 0.040449936 ? bg_b / 12.92 : ((bg_b+0.055) / 1.055) ^ 2.4;
+      bg_r = bg_r <= 0.040449936 ? bg_r / 12.92 : pow((bg_r+0.055) / 1.055, 2.4);
+      bg_g = bg_g <= 0.040449936 ? bg_g / 12.92 : pow((bg_g+0.055) / 1.055, 2.4);
+      bg_b = bg_b <= 0.040449936 ? bg_b / 12.92 : pow((bg_b+0.055) / 1.055, 2.4);
       bg_r = bg_r * (1 - fg_a) + fg_r * fg_a;
       bg_g = bg_g * (1 - fg_a) + fg_g * fg_a;
       bg_b = bg_b * (1 - fg_a) + fg_b * fg_a;
-      bg_r = bg_r <= 0.0031308 ? bg_r * 12.92 : 1.055 * bg_r^(1/2.4) - 0.055;
-      bg_g = bg_g <= 0.0031308 ? bg_g * 12.92 : 1.055 * bg_g^(1/2.4) - 0.055;
-      bg_b = bg_b <= 0.0031308 ? bg_b * 12.92 : 1.055 * bg_b^(1/2.4) - 0.055;
+      bg_r = bg_r <= 0.0031308 ? bg_r * 12.92 : 1.055 * pow(bg_r, 1 / 2.4) - 0.055;
+      bg_g = bg_g <= 0.0031308 ? bg_g * 12.92 : 1.055 * pow(bg_g, 1 / 2.4) - 0.055;
+      bg_b = bg_b <= 0.0031308 ? bg_b * 12.92 : 1.055 * pow(bg_b, 1 / 2.4) - 0.055;
       gfx_setpixel(bg_r, bg_g, bg_b);
       gfx_x += 1;
     );
