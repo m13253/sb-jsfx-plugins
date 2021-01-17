@@ -239,6 +239,9 @@ function gfx_rect_aa(x y x2 y2) local(
       bg_r = bg_r <= 0.0031308 ? bg_r * 12.92 : 1.055 * pow(bg_r, 1 / 2.4) - 0.055;
       bg_g = bg_g <= 0.0031308 ? bg_g * 12.92 : 1.055 * pow(bg_g, 1 / 2.4) - 0.055;
       bg_b = bg_b <= 0.0031308 ? bg_b * 12.92 : 1.055 * pow(bg_b, 1 / 2.4) - 0.055;
+      bg_r = min(bg_r + 1/510, 1);
+      bg_g = min(bg_g + 1/510, 1);
+      bg_b = min(bg_b + 1/510, 1);
       gfx_setpixel(bg_r, bg_g, bg_b);
       gfx_x += 1;
     );
