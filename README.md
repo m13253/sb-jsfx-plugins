@@ -32,7 +32,7 @@ There are five parameters:
 
 3. **Upper Hard Limit (LU)**, default is +13 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + +13 LU = -10 LUFS). This is a hard limit to prevent sudden shock. -10 LUFS is roughly the same loudness as a 1000 Hz sine wave with -1 dBFS peak level. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
+   This value is added to Target Loudness (e.g. -23 LUFS + +13 LU = -10 LUFS). This is a hard limit to prevent sudden shock. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
 
 4. **Lower Inflection Level (LU)**, default is -6 LU.
 
