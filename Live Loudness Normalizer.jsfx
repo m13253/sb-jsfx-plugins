@@ -322,7 +322,7 @@ gui_diff_px > gui_gate_px ? (
 
 gfx_set(0.998, 0.253, 0);
 gui_limit_px = db_to_pixel(limit_lu);
-gfx_rect_aa(gui_limit_px - 0.625, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625, gfx_h/2 + 6*gfx_ext_retina);
+gfx_rect_aa(gui_limit_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina);
 
 gfx_set(0.943);
 gfx_setfont(1, "MS Shell Dlg", 12 * gfx_ext_retina);
