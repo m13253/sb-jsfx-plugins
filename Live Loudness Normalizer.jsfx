@@ -220,9 +220,12 @@ function gfx_rect_aa(x y x2 y2) local(
   right_int = min(ceil(right), gfx_w);
   top_int = max(floor(top), 0);
   bottom_int = min(ceil(bottom), gfx_h);
-  fg_r = gfx_r <= 0.040449936 ? gfx_r / 12.92 : pow((gfx_r+0.055) / 1.055, 2.4);
-  fg_g = gfx_g <= 0.040449936 ? gfx_g / 12.92 : pow((gfx_g+0.055) / 1.055, 2.4);
-  fg_b = gfx_b <= 0.040449936 ? gfx_b / 12.92 : pow((gfx_b+0.055) / 1.055, 2.4);
+  fg_r = max(gfx_r - 1/510, 0);
+  fg_g = max(gfx_g - 1/510, 0);
+  fg_b = max(gfx_b - 1/510, 0);
+  fg_r = fg_r <= 0.040449936 ? fg_r / 12.92 : pow((fg_r+0.055) / 1.055, 2.4);
+  fg_g = fg_g <= 0.040449936 ? fg_g / 12.92 : pow((fg_g+0.055) / 1.055, 2.4);
+  fg_b = fg_b <= 0.040449936 ? fg_b / 12.92 : pow((fg_b+0.055) / 1.055, 2.4);
 
   gfx_y = top_int;
   loop(bottom_int - top_int,
@@ -302,8 +305,24 @@ loop(12,
   );
 );
 
+gui_gain_px = db_to_pixel(gain_db);
 gfx_set(0.167, 0.661, 0.457);
-gfx_rect_aa(min(db_to_pixel(gain_db), gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(db_to_pixel(gain_db), gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 8*gfx_ext_retina);
+gfx_rect_aa(min(gui_gain_px, gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(gui_gain_px, gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 8*gfx_ext_retina);
+
+gui_gate_px = db_to_pixel(gate_lufs - target_lufs + gain_db);
+gui_diff_px = db_to_pixel(momentary_lufs - target_lufs + gain_db);
+gui_gate_px > 0 ? (
+  gfx_set(0.873);
+  gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), gfx_h/2 + 3*gfx_ext_retina);
+);
+gui_diff_px > gui_gate_px ? (
+  gfx_set(0, 0.998, 0.586);
+  gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 3*gfx_ext_retina);
+);
+
+gfx_set(0.998, 0.253, 0);
+gui_limit_px = db_to_pixel(limit_lu);
+gfx_rect_aa(gui_limit_px - 0.625, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625, gfx_h/2 + 6*gfx_ext_retina);
 
 gfx_set(0.943);
 gfx_setfont(1, "MS Shell Dlg", 12 * gfx_ext_retina);
