@@ -273,9 +273,9 @@ loop(12,
     gui_mark_skip = 25 * 18*gfx_ext_retina / gfx_w;
     gui_mark_px = db_to_pixel(gui_mark_db);
     gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina);
-    gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+    gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
     gfx_x = floor(gui_mark_px + 0.5);
-    gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
+    gfx_y = floor(gfx_h/2 + 16*gfx_ext_retina + 0.5);
     sprintf(#gui_mark, "%+d", gui_mark_db);
     gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
   );
@@ -283,9 +283,9 @@ loop(12,
 
 gui_mark_px = db_to_pixel(0);
 gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 - 8*gfx_ext_retina);
-gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 8*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
 gfx_x = floor(gui_mark_px + 0.5);
-gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
+gfx_y = floor(gfx_h/2 + 16*gfx_ext_retina + 0.5);
 gfx_drawstr("0", $x101, gfx_x, gfx_y);
 
 gui_mark_db = 0;
@@ -297,9 +297,9 @@ loop(12,
     gui_mark_skip = 25 * 18*gfx_ext_retina / gfx_w;
     gui_mark_px = db_to_pixel(gui_mark_db);
     gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina);
-    gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina);
+    gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
     gfx_x = floor(gui_mark_px + 0.5);
-    gfx_y = floor(gfx_h/2 + 12*gfx_ext_retina + 0.5);
+    gfx_y = floor(gfx_h/2 + 16*gfx_ext_retina + 0.5);
     sprintf(#gui_mark, "%+d", gui_mark_db);
     gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
   );
@@ -307,26 +307,26 @@ loop(12,
 
 gui_gain_px = db_to_pixel(gain_db);
 gfx_set(0.167, 0.661, 0.457);
-gfx_rect_aa(min(gui_gain_px, gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(gui_gain_px, gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 8*gfx_ext_retina);
+gfx_rect_aa(min(gui_gain_px, gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(gui_gain_px, gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 12*gfx_ext_retina);
 
 gui_gate_px = db_to_pixel(gate_lufs - target_lufs + gain_db);
 gui_diff_px = db_to_pixel(momentary_lufs - target_lufs + gain_db);
 gui_gate_px > 0 ? (
   gfx_set(0.873);
-  gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), gfx_h/2 + 3*gfx_ext_retina);
+  gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), gfx_h/2 + 7*gfx_ext_retina);
 );
 gui_diff_px > gui_gate_px ? (
   gfx_set(0, 0.998, 0.586);
-  gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 3*gfx_ext_retina);
+  gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina);
 );
 
 gfx_set(0.998, 0.253, 0);
 gui_limit_px = db_to_pixel(limit_lu);
-gfx_rect_aa(gui_limit_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625*gfx_ext_retina, gfx_h/2 + 6*gfx_ext_retina);
+gfx_rect_aa(gui_limit_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina);
 
 gfx_set(0.943);
 gfx_setfont(1, "MS Shell Dlg", 12 * gfx_ext_retina);
-gfx_x = floor(4 * gfx_ext_retina + 0.5);
-gfx_y = floor(min(gfx_h/2 - 16 * gfx_ext_retina, 16 * gfx_ext_retina) + 0.5);
+gfx_x = floor(4*gfx_ext_retina + 0.5);
+gfx_y = floor(min(gfx_h/2 - 16*gfx_ext_retina, 16*gfx_ext_retina) + 0.5);
 sprintf(#gui_gain, "Gain: %+.1f dB", gain_db);
 gfx_drawstr(#gui_gain, $x108, gfx_x, gfx_y);
