@@ -18,6 +18,8 @@ If you are more comfortable using another DAW instead of Reaper, you can also lo
 
 This plugin is used for live audio streaming. A typical scenario is a live program with music and speech, but the loudness is changing rapidly so it is hard to predict or adjust the volume. Other loudness normalizer may not be able to handle realtime situation. Therefore, I wrote this plugin.
 
+Note: if you want to normalize non-realtime materials such as prerecorded albums, try ReplayGain 2.0 compatible [loudgain](https://github.com/Moonbase59/loudgain).
+
 The algorithm measures the current Momentary Loudness, and compare it with the Target Loudness. When the difference between these values are high, the algorithm tries to adjust the gain at a higher rate. When the difference gradually approaches to zero, the rate of change also decreases to maintain audio quality and dynamic range. Additionally, special care is taken to handle the quiet sections and the silence between songs.
 
 There are five parameters:
