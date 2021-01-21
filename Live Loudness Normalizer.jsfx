@@ -208,18 +208,18 @@ spl7 *= gain;
 @gfx 520 64
 
 function gfx_rect_aa(x y x2 y2) local(
-  left, left_int, right, right_int,
-  top, top_int, bottom, bottom_int,
+  left, left_bbox, right, right_bbox,
+  top, top_bbox, bottom, bottom_bbox,
   fg_r, fg_g, fg_b, fg_a, bg_r, bg_g, bg_b
 ) (
-  left = min(x, x2);
-  right = max(x, x2);
-  top = min(y, y2);
-  bottom = max(y, y2);
-  left_int = max(floor(left), 0);
-  right_int = min(ceil(right), gfx_w);
-  top_int = max(floor(top), 0);
-  bottom_int = min(ceil(bottom), gfx_h);
+  left = x;
+  right = x2;
+  top = y;
+  bottom = y2;
+  left_bbox = max(floor(left), 0);
+  right_bbox = min(ceil(right), gfx_w);
+  top_bbox = max(floor(top), 0);
+  bottom_bbox = min(ceil(bottom), gfx_h);
   fg_r = max(gfx_r - 1/510, 0);
   fg_g = max(gfx_g - 1/510, 0);
   fg_b = max(gfx_b - 1/510, 0);
@@ -227,10 +227,10 @@ function gfx_rect_aa(x y x2 y2) local(
   fg_g = fg_g <= 0.040449936 ? fg_g / 12.92 : pow((fg_g+0.055) / 1.055, 2.4);
   fg_b = fg_b <= 0.040449936 ? fg_b / 12.92 : pow((fg_b+0.055) / 1.055, 2.4);
 
-  gfx_y = top_int;
-  loop(bottom_int - top_int,
-    gfx_x = left_int;
-    loop(right_int - left_int,
+  gfx_y = top_bbox;
+  loop(bottom_bbox - top_bbox,
+    gfx_x = left_bbox;
+    loop(right_bbox - left_bbox,
       fg_a = gfx_a * (min(gfx_x + 1, right) - max(gfx_x, left)) * (min(gfx_y + 1, bottom) - max(gfx_y, top));
       gfx_getpixel(bg_r, bg_g, bg_b);
       bg_r = bg_r <= 0.040449936 ? bg_r / 12.92 : pow((bg_r+0.055) / 1.055, 2.4);
@@ -239,6 +239,50 @@ function gfx_rect_aa(x y x2 y2) local(
       bg_r = bg_r * (1 - fg_a) + fg_r * fg_a;
       bg_g = bg_g * (1 - fg_a) + fg_g * fg_a;
       bg_b = bg_b * (1 - fg_a) + fg_b * fg_a;
+      bg_r = bg_r <= 0.0031308 ? bg_r * 12.92 : 1.055 * pow(bg_r, 1 / 2.4) - 0.055;
+      bg_g = bg_g <= 0.0031308 ? bg_g * 12.92 : 1.055 * pow(bg_g, 1 / 2.4) - 0.055;
+      bg_b = bg_b <= 0.0031308 ? bg_b * 12.92 : 1.055 * pow(bg_b, 1 / 2.4) - 0.055;
+      bg_r = min(bg_r + 1/510, 1);
+      bg_g = min(bg_g + 1/510, 1);
+      bg_b = min(bg_b + 1/510, 1);
+      gfx_setpixel(bg_r, bg_g, bg_b);
+      gfx_x += 1;
+    );
+    gfx_y += 1;
+  );
+);
+
+function gfx_shadow_aa(x y x2 y2 z outline) local(
+  left, left_bbox, right, right_bbox,
+  top, top_bbox, bottom, bottom_bbox,
+  bg_r, bg_g, bg_b, bg_a,
+) (
+  left = x - outline;
+  right = x2 + outline;
+  top = y - outline;
+  bottom = y2 + outline;
+  left_bbox = max(floor(left - 8*z), 0);
+  right_bbox = min(ceil(right + 8*z), gfx_w);
+  top_bbox = max(floor(top - 8*z), 0);
+  bottom_bbox = min(ceil(bottom + 8*z), gfx_h);
+
+  gfx_y = top_bbox;
+  loop(bottom_bbox - top_bbox,
+    gfx_x = left_bbox;
+    loop(right_bbox - left_bbox,
+      bg_a = 1 - min(max(gfx_a * (
+        atan((gfx_x - left) * (gfx_y - top) * invsqrt(sqr(gfx_x - left) + sqr(gfx_y - top) + sqr(z))) +
+        atan((right - gfx_x) * (gfx_y - top) * invsqrt(sqr(right - gfx_x) + sqr(gfx_y - top) + sqr(z))) +
+        atan((gfx_x - left) * (bottom - gfx_y) * invsqrt(sqr(gfx_x - left) + sqr(bottom - gfx_y) + sqr(z))) +
+        atan((right - gfx_x) * (bottom - gfx_y) * invsqrt(sqr(right - gfx_x) + sqr(bottom - gfx_y) + sqr(z)))
+      ) / (2 * $pi), 0), 1);
+      gfx_getpixel(bg_r, bg_g, bg_b);
+      bg_r = bg_r <= 0.040449936 ? bg_r / 12.92 : pow((bg_r+0.055) / 1.055, 2.4);
+      bg_g = bg_g <= 0.040449936 ? bg_g / 12.92 : pow((bg_g+0.055) / 1.055, 2.4);
+      bg_b = bg_b <= 0.040449936 ? bg_b / 12.92 : pow((bg_b+0.055) / 1.055, 2.4);
+      bg_r *= bg_a;
+      bg_g *= bg_a;
+      bg_b *= bg_a;
       bg_r = bg_r <= 0.0031308 ? bg_r * 12.92 : 1.055 * pow(bg_r, 1 / 2.4) - 0.055;
       bg_g = bg_g <= 0.0031308 ? bg_g * 12.92 : 1.055 * pow(bg_g, 1 / 2.4) - 0.055;
       bg_b = bg_b <= 0.0031308 ? bg_b * 12.92 : 1.055 * pow(bg_b, 1 / 2.4) - 0.055;
@@ -282,8 +326,8 @@ loop(12,
 );
 
 gui_mark_px = db_to_pixel(0);
-gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 - 8*gfx_ext_retina);
-gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
+gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 - 12*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, ceil(gfx_h/2 - 8*gfx_ext_retina));
+gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, floor(gfx_h/2 + 12*gfx_ext_retina), gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
 gfx_x = floor(gui_mark_px + 0.5);
 gfx_y = floor(gfx_h/2 + 16*gfx_ext_retina + 0.5);
 gfx_drawstr("0", $x101, gfx_x, gfx_y);
@@ -306,22 +350,21 @@ loop(12,
 );
 
 gui_gain_px = db_to_pixel(gain_db);
+gfx_shadow_aa(min(gui_gain_px, gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(gui_gain_px, gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 12*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
 gfx_set(0.167, 0.661, 0.457);
 gfx_rect_aa(min(gui_gain_px, gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(gui_gain_px, gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 12*gfx_ext_retina);
 
 gui_gate_px = db_to_pixel(gate_lufs - target_lufs + gain_db);
 gui_diff_px = db_to_pixel(momentary_lufs - target_lufs + gain_db);
-gui_gate_px > 0 ? (
-  gfx_set(0.873);
-  gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), gfx_h/2 + 7*gfx_ext_retina);
-);
-gui_diff_px > gui_gate_px ? (
-  gfx_set(0, 0.998, 0.586);
-  gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina);
-);
+gfx_shadow_aa(0, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
+gfx_set(0.873);
+gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), gfx_h/2 + 7*gfx_ext_retina);
+gfx_set(0, 0.998, 0.586);
+gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina);
 
-gfx_set(0.998, 0.253, 0);
 gui_limit_px = db_to_pixel(limit_lu);
+gfx_shadow_aa(gui_limit_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
+gfx_set(0.998, 0.253, 0);
 gfx_rect_aa(gui_limit_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_limit_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina);
 
 gfx_set(0.943);
