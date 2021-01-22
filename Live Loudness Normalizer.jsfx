@@ -270,6 +270,8 @@ function gfx_shadow_aa(x y x2 y2 z outline) local(
   loop(bottom_bbox - top_bbox,
     gfx_x = left_bbox;
     loop(right_bbox - left_bbox,
+      // Pre-integrated Lambert diffusion under hemisphere illumination
+      // Midpoint rule is used because it does not require heavy computation
       bg_a = 1 - min(max(gfx_a * (
         atan((gfx_x + 0.5 - left) * (gfx_y + 0.5 - top) * invsqrt(sqr(gfx_x + 0.5 - left) + sqr(gfx_y + 0.5 - top) + sqr(z))) -
         atan((gfx_x + 0.5 - right) * (gfx_y + 0.5 - top) * invsqrt(sqr(gfx_x + 0.5 - right) + sqr(gfx_y + 0.5 - top) + sqr(z))) -
