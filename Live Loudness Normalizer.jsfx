@@ -271,10 +271,10 @@ function gfx_shadow_aa(x y x2 y2 z outline) local(
     gfx_x = left_bbox;
     loop(right_bbox - left_bbox,
       bg_a = 1 - min(max(gfx_a * (
-        atan((gfx_x - left) * (gfx_y - top) * invsqrt(sqr(gfx_x - left) + sqr(gfx_y - top) + sqr(z))) +
-        atan((right - gfx_x) * (gfx_y - top) * invsqrt(sqr(right - gfx_x) + sqr(gfx_y - top) + sqr(z))) +
-        atan((gfx_x - left) * (bottom - gfx_y) * invsqrt(sqr(gfx_x - left) + sqr(bottom - gfx_y) + sqr(z))) +
-        atan((right - gfx_x) * (bottom - gfx_y) * invsqrt(sqr(right - gfx_x) + sqr(bottom - gfx_y) + sqr(z)))
+        atan((gfx_x + 0.5 - left) * (gfx_y + 0.5 - top) * invsqrt(sqr(gfx_x + 0.5 - left) + sqr(gfx_y + 0.5 - top) + sqr(z))) -
+        atan((gfx_x + 0.5 - right) * (gfx_y + 0.5 - top) * invsqrt(sqr(gfx_x + 0.5 - right) + sqr(gfx_y + 0.5 - top) + sqr(z))) -
+        atan((gfx_x + 0.5 - left) * (gfx_y + 0.5 - bottom) * invsqrt(sqr(gfx_x + 0.5 - left) + sqr(gfx_y + 0.5 - bottom) + sqr(z))) +
+        atan((gfx_x + 0.5 - right) * (gfx_y + 0.5 - bottom) * invsqrt(sqr(gfx_x + 0.5 - right) + sqr(gfx_y + 0.5 - bottom) + sqr(z)))
       ) / (2 * $pi), 0), 1);
       gfx_getpixel(bg_r, bg_g, bg_b);
       bg_r = bg_r <= 0.040449936 ? bg_r / 12.92 : pow((bg_r+0.055) / 1.055, 2.4);
