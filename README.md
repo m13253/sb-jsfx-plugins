@@ -30,7 +30,7 @@ There are five parameters:
 
    The higher this value, the louder output will be. The standard loudness for television and radio is -23 LUFS, for YouTube and Spotify is -14 LUFS. If you are mastering for a background music, set this 20 LU lower than your foreground speech.
 
-2. **Decay Half-life (sec)**, default is 3 second.
+2. **Decay Half-life (sec)**, default is 3 seconds.
 
    The gain adjustment follows an exponential decay curve. The higher this value, the slower gain adjustment will be.
 
