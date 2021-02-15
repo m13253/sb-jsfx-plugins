@@ -28,25 +28,83 @@ There are five parameters:
 
 1. **Target Loudness (LUFS)**, default is -23 LUFS.
 
-   The higher this value, the louder output will be. The standard loudness for television and radio is -23 LUFS, for YouTube and Spotify is -14 LUFS. If you are mastering for a background music, set this 20 LU lower than your foreground speech.
+   The higher this value, the louder output will be.
+
+   | Platform of delivery | Reference loudness |
+   |----------------------|--------------------|
+   | YouTube              | -14 LUFS           |
+   | Spotify              | -14 LUFS           |
+   | Apple Music          | -16 LUFS           |
+   | TV & Radio           | -23 LUFS           |
+
+   | Content of delivery  | Reference loudness            |
+   |----------------------|-------------------------------|
+   | Pop music            | -14 LUFS or lower             |
+   | Speech               | -16 LUFS                      |
+   | Classical music      | -23 LUFS or lower             |
+   | Background music     | Foreground speech minus 20 LU |
 
 2. **Decay Half-life (sec)**, default is 3 seconds.
 
-   The gain adjustment follows an exponential decay curve. The higher this value, the slower gain adjustment will be.
+   The gain adjustment follows an exponential decay curve: The farther difference from target, the faster gain adjustment will be. The longer decay half-life, the slower gain adjustment will be.
+
+   | Content of delivery  | Reference value |
+   |----------------------|-----------------|
+   | Music                | 3 - 10 seconds  |
+   | Speech               | 3 seconds       |
+
+   If you are curious, the gain adjustment formula is:
+   ```
+   diff_lu = target_lufs - current_lufs - gain_db
+
+   d gain_db   diff_lu * ln(2)
+   --------- = ---------------
+       dt       half_life_sec
+   ```
+   when `diff_lu > 0`.
 
 3. **Upper Hard Limit (LU)**, default is +13 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + +13 LU = -10 LUFS). This is a hard limit to prevent sudden shock. Do not try to rely on this, or the audio quality will be dramatically damaged. If you dynamic range is very high, you might need to append a peak limiter (e.g. NP1136 Peak Limiter which is pre-installed with Reaper).
+   Values in "LU" are added to Target Loudness (e.g. -23 LUFS + +13 LU = -10 LUFS).
+
+   This is a hard limit to prevent sudden shock. Do not try to rely regularly on this, or the audio quality will be damaged.
+
+   If really need a peak limiter, you can try NP1136 Peak Limiter, pre-installed with Reaper.
+
+   | Content of delivery  | Reference value |
+   |----------------------|-----------------|
+   | Pop music            | +13 LU          |
+   | Speech               | +15 LU          |
+   | Classical music      | +22 LU          |
 
 4. **Lower Inflection Level (LU)**, default is -6 LU.
 
-   This value is added to Target Loudness (e.g. -23 LUFS + -6 LU = -29 LUFS). The changing rate decreases instead of increasing when the measured Momentary Loudness is below this level. This feature is designed to handle transitions from quiet sections and loud sections carefully, to prevent sudden loudness increase.
+   Value in "LU" are added to Target Loudness (e.g. -23 LUFS + -6 LU = -29 LUFS).
 
-   If you need to disable this feature, set this to 0 LU.
+   | Content of delivery  | Reference value |
+   |----------------------|-----------------|
+   | Pop music            | -6 LU           |
+   | Speech               | -9 LU           |
+   | Classical music      | -13 LU          |
+   | Disable this feature | 0 LU            |
+
+   In order to handle transitions from quiet sections and loud sections carefully, the gain adjustment curve is slightly different: When the current loudness is below the lower inflection level, the farther different from target, the slower (instead of faster) gain adjustment will become.
+
+   If you are curious, the gain adjustment formula is:
+   ```
+                                                 2
+   d gain_db   diff_lu * ln(2)        influect_lu
+   --------- = --------------- * ----------------------
+       dt       half_life_sec           2             2
+                                 diff_lu  + inflect_lu 
+   ```
+   when `diff_lu < 0` and `inflect_lu < 0`.
 
 5. **Bottom Gate Level (LUFS)**, default -48 LUFS.
 
-   When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence. If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
+   When the measured Momentary Loudness is below this level, either between two songs, or when no one is speaking, the algorithm treats the signal as silence.
+
+   If your material has background noise, set this value higher than the loudness of that noise, or the noise will be amplified to the target loudness. A more ideal solution is to prepend a noise remover plugin.
 
 ## Licenses
 
