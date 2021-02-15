@@ -32,18 +32,18 @@ in_pin:left input
 in_pin:right input
 in_pin:center input
 in_pin:LFE input
-in_pin:rear left input
-in_pin:rear right input
 in_pin:side left input
 in_pin:side right input
+in_pin:rear left input
+in_pin:rear right input
 out_pin:left output
 out_pin:right output
 out_pin:center output
 out_pin:LFE output
-out_pin:rear left input
-out_pin:rear right input
 out_pin:side left input
 out_pin:side right input
+out_pin:rear left input
+out_pin:rear right input
 
 @init
 
@@ -133,10 +133,10 @@ function filter_signal() local(
     sqr(array.filtered[offset0 + 1]) +        // Right
     sqr(array.filtered[offset0 + 2]) +        // Center
     // 0 +                                    // LFE
-    sqr(array.filtered[offset0 + 4]) * 1.41 + // Rear Left
-    sqr(array.filtered[offset0 + 5]) * 1.41 + // Rear Right
-    sqr(array.filtered[offset0 + 6]) * 1.41 + // Side Left
-    sqr(array.filtered[offset0 + 7]) * 1.41;  // Side Right
+    sqr(array.filtered[offset0 + 4]) * 1.41 + // Side Left
+    sqr(array.filtered[offset0 + 5]) * 1.41 + // Side Right
+    sqr(array.filtered[offset0 + 6]) * 1.41 + // Rear Left
+    sqr(array.filtered[offset0 + 7]) * 1.41;  // Rear Right
 );
 
 function measure_momentary_loudness_lufs() local(
