@@ -322,8 +322,8 @@ loop(12,
     gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
     gfx_x = floor(gui_mark_px + 0.5);
     gfx_y = floor(gfx_h/2 + 16*gfx_ext_retina + 0.5);
-    sprintf(#gui_mark, "%+d", gui_mark_db);
-    gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
+    sprintf(0, "%+d", gui_mark_db);
+    gfx_drawstr(0, $x101, gfx_x, gfx_y);
   );
 );
 
@@ -346,8 +346,8 @@ loop(12,
     gfx_rect_aa(gui_mark_px - 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, gui_mark_px + 0.625*gfx_ext_retina, gfx_h/2 + 16*gfx_ext_retina);
     gfx_x = floor(gui_mark_px + 0.5);
     gfx_y = floor(gfx_h/2 + 16*gfx_ext_retina + 0.5);
-    sprintf(#gui_mark, "%+d", gui_mark_db);
-    gfx_drawstr(#gui_mark, $x101, gfx_x, gfx_y);
+    sprintf(0, "%+d", gui_mark_db);
+    gfx_drawstr(0, $x101, gfx_x, gfx_y);
   );
 );
 
@@ -373,5 +373,5 @@ gfx_set(0.943);
 gfx_setfont(1, "MS Shell Dlg", 12 * gfx_ext_retina);
 gfx_x = floor(4*gfx_ext_retina + 0.5);
 gfx_y = floor(min(gfx_h/2 - 16*gfx_ext_retina, 16*gfx_ext_retina) + 0.5);
-sprintf(#gui_gain, "Gain: %+.1f dB", gain_db);
-gfx_drawstr(#gui_gain, $x108, gfx_x, gfx_y);
+sprintf(0, "Gain: %+.1f dB", gain_db);
+gfx_drawstr(0, $x108, gfx_x, gfx_y);
