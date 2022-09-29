@@ -25,12 +25,12 @@ desc:Live Loudness Normalizer (StarBrilliant)
 author:Star Brilliant
 license:MIT
 
-slider1:preamp_db=0<-60,60,0.1>Pre-amplify (dB)
-slider2:target_lufs=-23<-60,0,0.1>Target Loudness (LUFS)
-slider3:half_life_sec=3<0,10,0.1>Decay Half-life (sec)
-slider4:gain_limit_db=24<0,60,0.1>Gain Limit (±dB)
-slider5:output_limit_lu=13<0,24,0.1>Output Protection Limit (LU)
-slider6:output_inflect_lu=-6<-24,0,0.1>Output Inflection Level (LU)
+slider1:target_lufs=-23<-60,0,0.1>Target Loudness (LUFS)
+slider2:half_life_sec=3<0,10,0.1>Decay Half-life (sec)
+slider3:output_limit_lu=13<0,24,0.1>Output Limit (LU)
+slider4:inflect_lu=-6<-24,0,0.1>Inflection Threshold (LU)
+slider5:gain_limit_db=24<0,60,0.1>Gain Limit (±dB)
+slider6:preamp_db=0<-60,60,0.1>Input Pre-amplify (dB)
 slider7:gate_lufs=-48<-70,0,0.1>Input Noise Gate (LUFS)
 slider8:keep_gain_at_silence=0<0,1,1{No,Yes}>Keep Gain during Silence
 slider9:reset_gain=0<0,1,1{No,Yes}>Reset Gain
@@ -232,8 +232,8 @@ diff_lu = momentary_lufs > gate_lufs - current_preamp_db ?
   target_lufs - momentary_lufs - current_preamp_db - gain_db :
     !keep_gain_at_silence ? -gain_db;
 gain_db += diff_lu * min(
-  (diff_lu > 0 && output_inflect_lu < -0.05 ?
-    sqr(output_inflect_lu) / (sqr(output_inflect_lu) + sqr(diff_lu)) :
+  (diff_lu > 0 && inflect_lu < -0.05 ?
+    sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) :
     1
   ) * (log(2) / (half_life_sec * srate)),
   1
@@ -409,11 +409,11 @@ gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), 
 gfx_set(0, 0.998, 0.586);
 gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina);
 
-output_inflect_lu < -0.05 ? (
-  gui_output_inflect_px = db_to_pixel(output_inflect_lu);
-  gfx_shadow_aa(gui_output_inflect_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_output_inflect_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
+inflect_lu < -0.05 ? (
+  gui_inflect_px = db_to_pixel(inflect_lu);
+  gfx_shadow_aa(gui_inflect_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_inflect_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
   gfx_set(0.75, 0.75, 0);
-  gfx_rect_aa(gui_output_inflect_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_output_inflect_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina);
+  gfx_rect_aa(gui_inflect_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_inflect_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina);
 );
 
 gui_output_limit_px = db_to_pixel(output_limit_lu);
