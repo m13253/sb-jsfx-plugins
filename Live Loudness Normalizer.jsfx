@@ -236,7 +236,7 @@ gain_db += diff_lu * min(
     sqr(output_inflect_lu) / (sqr(output_inflect_lu) + sqr(diff_lu)) :
     1
   ) * (log(2) / (half_life_sec * srate)),
-  1 / (measure_interval - offset.measure)
+  1
 );
 gain_db = min(min(max(gain_db, -gain_limit_db), target_lufs + output_limit_lu - momentary_lufs - current_preamp_db), gain_limit_db);
 
