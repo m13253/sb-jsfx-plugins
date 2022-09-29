@@ -158,7 +158,7 @@ function measure_momentary_loudness_lufs() local(
       sum += array.mixed[i];
       i += 1;
     );
-    last_sample = array.mixed[1];
+    last_sample = array.mixed[max(min(1, buffer_length - 1), 0)];
   ) : (
     // Replace only one sample to improve performance
     sum -= last_sample;
