@@ -330,7 +330,9 @@ gain_db += diff_lu * min(
 );
 
 playhead_lufs = pop_lookahead_loudness_lufs();
-gain_db = min(min(max(gain_db, -gain_limit_db), target_lufs + output_limit_lu - playhead_lufs - current_preamp_db), gain_limit_db);
+gain_limit_lookahead = target_lufs + output_limit_lu - momentary_lufs - current_preamp_db;
+gain_limit_playhead = target_lufs + output_limit_lu - playhead_lufs - current_preamp_db;
+gain_db = min(min(min(max(gain_db, -gain_limit_db), gain_limit_lookahead), gain_limit_playhead), gain_limit_db);
 gain = pow(10, (current_preamp_db + gain_db) * 0.05);
 pop_lookahead_buffer(gain);
 
