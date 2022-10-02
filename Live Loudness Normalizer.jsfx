@@ -143,7 +143,6 @@ function pop_lookahead_buffer(gain) local(
     spl5 = array.lookahead[offset0 + 6] * gain;
     spl6 = array.lookahead[offset0 + 7] * gain;
     spl7 = array.lookahead[offset0 + 8] * gain;
-    playhead_lufs = array.lookahead[offset0 + 9];
   ) : (
     spl0 = 0;
     spl1 = 0;
@@ -153,7 +152,6 @@ function pop_lookahead_buffer(gain) local(
     spl5 = 0;
     spl6 = 0;
     spl7 = 0;
-    playhead_lufs = -inf;
   );
 
   0;
@@ -225,6 +223,14 @@ function measure_momentary_loudness_lufs() local(
   );
 
   log10(sum) * 10 - 0.691;
+);
+
+function pop_lookahead_loudness_lufs(gain) local(
+  offset0
+) (
+  offset0 = offset.lookahead * (num_channels + 2);
+
+  array.lookahead[offset0] ? array.lookahead[offset0 + 9] : -inf;
 );
 
 ext_nodenorm = 1;
@@ -316,14 +322,15 @@ diff_lu = momentary_lufs > gate_lufs - current_preamp_db ?
   target_lufs - momentary_lufs - current_preamp_db - gain_db :
     !keep_gain_at_silence ? -gain_db;
 gain_db += diff_lu * min(
-  (diff_lu > 0 && inflect_lu < -0.05 ?
+  (diff_lu > 0 && inflect_lu < -0 ?
     sqr(inflect_lu) / (sqr(inflect_lu) + sqr(diff_lu)) :
     1
   ) * (log(2) / (half_life_sec * srate)),
   1
 );
-gain_db = min(min(max(gain_db, -gain_limit_db), target_lufs + output_limit_lu - momentary_lufs - current_preamp_db), gain_limit_db);
 
+playhead_lufs = pop_lookahead_loudness_lufs();
+gain_db = min(min(max(gain_db, -gain_limit_db), target_lufs + output_limit_lu - playhead_lufs - current_preamp_db), gain_limit_db);
 gain = pow(10, (current_preamp_db + gain_db) * 0.05);
 pop_lookahead_buffer(gain);
 
@@ -490,7 +497,7 @@ gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), 
 gfx_set(0, 0.998, 0.586);
 gfx_rect_aa(gui_gate_px, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina);
 
-inflect_lu < -0.05 ? (
+inflect_lu < -0 ? (
   gui_inflect_px = db_to_pixel(inflect_lu);
   gfx_shadow_aa(gui_inflect_px - 0.625*gfx_ext_retina, gfx_h/2 - 6*gfx_ext_retina, gui_inflect_px + 0.625*gfx_ext_retina, gfx_h/2 + 10*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
   gfx_set(0.75, 0.75, 0);
