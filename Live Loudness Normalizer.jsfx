@@ -25,15 +25,16 @@ desc:Live Loudness Normalizer (StarBrilliant)
 author:Star Brilliant
 license:MIT
 
-slider1:target_lufs=-23<-60,0,0.1>Target Loudness (LUFS)
-slider2:half_life_sec=3<0,10,0.1>Decay Half-life (sec)
-slider3:output_limit_lu=13<0,24,0.1>Output Limit (LU)
-slider4:inflect_lu=-6<-24,0,0.1>Inflection Threshold (LU)
-slider5:gain_limit_db=24<0,60,0.1>Gain Limit (±dB)
-slider6:preamp_db=0<-60,60,0.1>Input Pre-amplify (dB)
-slider7:gate_lufs=-48<-70,0,0.1>Input Noise Gate (LUFS)
-slider8:keep_gain_at_silence=0<0,1,1{No,Yes}>Keep Gain during Silence
-slider9:reset_gain=0<0,1,1{No,Yes}>Reset Gain
+slider1:target_lufs=-23<-60,0,0.01>Target Loudness (LUFS)
+slider2:half_life_sec=3<0,30,0.001>Decay Half-life (sec)
+slider3:output_limit_lu=13<0,24,0.01>Output Limit (LU)
+slider4:inflect_lu=-6<-24,0,0.01>Inflection Threshold (LU)
+slider5:gain_limit_db=24<0,48,0.01>Gain Limit (±dB)
+slider6:preamp_db=0<-60,60,0.01>Input Pre-amplify (dB)
+slider7:lookahead_sec=0<0,15,0.001>Input Look-ahead (sec)
+slider8:gate_lufs=-48<-70,0,0.01>Input Noise Gate (LUFS)
+slider9:keep_gain_at_silence=0<0,1,1{No,Yes}>Keep Gain during Silence
+slider10:reset_gain=0<0,1,1{No,Yes}>Reset Gain
 
 in_pin:left input
 in_pin:right input
@@ -53,6 +54,11 @@ out_pin:rear left input
 out_pin:rear right input
 
 @init
+
+// For some reason I don't know, "1 / 0" produces 0 instead of infinity.
+// But "/= 0" can produce infinity.
+inf = 1;
+inf /= 0;
 
 function init_ebur128_filter() local(
   f0, G, Q, K, Vh, Vb, a0,
@@ -104,6 +110,56 @@ function init_ebur128_filter() local(
   0;
 );
 
+function push_lookahead_buffer() local(
+  offset0
+) (
+  offset0 = offset.lookahead * (num_channels + 2);
+
+  array.lookahead[offset0 + 1] = spl0;
+  array.lookahead[offset0 + 2] = spl1;
+  array.lookahead[offset0 + 3] = spl2;
+  array.lookahead[offset0 + 4] = spl3;
+  array.lookahead[offset0 + 5] = spl4;
+  array.lookahead[offset0 + 6] = spl5;
+  array.lookahead[offset0 + 7] = spl6;
+  array.lookahead[offset0 + 8] = spl7;
+  array.lookahead[offset0 + 9] = momentary_lufs;
+  array.lookahead[offset0] = 1;
+
+  0;
+);
+
+function pop_lookahead_buffer(gain) local(
+  offset0
+) (
+  offset0 = offset.lookahead * (num_channels + 2);
+
+  array.lookahead[offset0] ? (
+    spl0 = array.lookahead[offset0 + 1] * gain;
+    spl1 = array.lookahead[offset0 + 2] * gain;
+    spl2 = array.lookahead[offset0 + 3] * gain;
+    spl3 = array.lookahead[offset0 + 4] * gain;
+    spl4 = array.lookahead[offset0 + 5] * gain;
+    spl5 = array.lookahead[offset0 + 6] * gain;
+    spl6 = array.lookahead[offset0 + 7] * gain;
+    spl7 = array.lookahead[offset0 + 8] * gain;
+    playhead_lufs = array.lookahead[offset0 + 9];
+  ) : (
+    spl0 = 0;
+    spl1 = 0;
+    spl2 = 0;
+    spl3 = 0;
+    spl4 = 0;
+    spl5 = 0;
+    spl6 = 0;
+    spl7 = 0;
+    playhead_lufs = -inf;
+    TRACE += 1;
+  );
+
+  0;
+);
+
 function filter_signal() local(
   offset0, offset1, offset2, offset3, offset4, ch
 ) (
@@ -112,6 +168,7 @@ function filter_signal() local(
   offset2 = (offset.unmixed + (offset.unmixed < 2 ? filter_length) - 2) * num_channels;
   offset3 = (offset.unmixed + (offset.unmixed < 3 ? filter_length) - 3) * num_channels;
   offset4 = (offset.unmixed + (offset.unmixed < 4 ? filter_length) - 4) * num_channels;
+
   array.unfiltered[offset0] = spl0;
   array.unfiltered[offset0 + 1] = spl1;
   array.unfiltered[offset0 + 2] = spl2;
@@ -120,6 +177,7 @@ function filter_signal() local(
   array.unfiltered[offset0 + 5] = spl5;
   array.unfiltered[offset0 + 6] = spl6;
   array.unfiltered[offset0 + 7] = spl7;
+
   ch = 0;
   loop(num_channels,
     array.filtered[offset0 + ch] = (
@@ -135,6 +193,7 @@ function filter_signal() local(
     ) / d.a0;
     ch += 1;
   );
+
   array.mixed[offset.mixed] = (
     sqr(array.filtered[offset0]) +            // Left
     sqr(array.filtered[offset0 + 1]) +        // Right
@@ -144,7 +203,7 @@ function filter_signal() local(
     sqr(array.filtered[offset0 + 5]) * 1.41 + // Side Right
     sqr(array.filtered[offset0 + 6]) * 1.41 + // Rear Left
     sqr(array.filtered[offset0 + 7]) * 1.41   // Rear Right
-  ) / max(buffer_length, 1);
+  ) / max(loudness_buffer_len, 1);
 );
 
 function measure_momentary_loudness_lufs() local(
@@ -154,45 +213,60 @@ function measure_momentary_loudness_lufs() local(
     // Do a full measurement to reduce accumulation error
     i = 0;
     sum = 0;
-    loop(buffer_length,
+    loop(loudness_buffer_len,
       sum += array.mixed[i];
       i += 1;
     );
-    last_sample = array.mixed[max(min(1, buffer_length - 1), 0)];
+    last_sample = array.mixed[max(min(1, loudness_buffer_len - 1), 0)];
   ) : (
     // Replace only one sample to improve performance
     sum -= last_sample;
     sum += array.mixed[offset.mixed];
-    last_sample = array.mixed[offset.mixed + 1 < buffer_length ? offset.mixed + 1];
+    last_sample = array.mixed[offset.mixed + 1 < loudness_buffer_len ? offset.mixed + 1];
   );
-  log10(sum) * 10 - 0.691
+
+  log10(sum) * 10 - 0.691;
 );
 
 ext_nodenorm = 1;
 gfx_ext_retina = 1;
+
+// 7.1 channel layout
 num_channels = 8;
-momentary_lufs = target_lufs;
+// EBU R128 uses a 5-tap filter
+filter_length = 5;
+// Buffer 400ms for momentary loudness measurement
+loudness_buffer_len = max(floor(srate * 0.4 + 0.5), 1);
+
+momentary_lufs = -inf;
+playhead_lufs = -inf;
 start_preamp_db = preamp_db;
 current_preamp_db = preamp_db;
 target_preamp_db = preamp_db;
 // Create a short 5ms fade in/out for the preamp gain
+// (Humans need a minimum of about 0.01 to 0.02 second of auditory experience to perceive duration)
 total_preamp_smp = max(floor(srate * 0.005 + 0.5), 1);
 remaining_preamp_smp = 0;
-filter_length = 5;
-// Buffer 400ms for momentary loudness measurement
-buffer_length = max(floor(srate * 0.4 + 0.5), 1);
-// Measure every 5ms
-// (Humans need a minimum of about 0.01 to 0.02 second of auditory experience to perceive duration)
-measure_interval = max(floor(srate * 0.005 + 0.5), 1);
+
+current_lookahead_sec = lookahead_sec;
+lookahead_smp = max(floor(srate * current_lookahead_sec + 0.5), 0);
+lookahead_buffer_len = lookahead_smp + 1;
+pdc_bot_ch = 0;
+pdc_top_ch = num_channels;
+pdc_delay = lookahead_smp;
+
+// Partition the memory heap
 array.unfiltered = 0;
 array.filtered = filter_length * num_channels;
 array.mixed = array.filtered + filter_length * num_channels;
-array.length = array.mixed + buffer_length;
+array.lookahead = array.mixed + loudness_buffer_len;
+array.length = array.lookahead + lookahead_buffer_len * (num_channels + 2);
 offset.unmixed = 0;
 offset.mixed = 0;
-offset.measure = 0;
+offset.lookahead = 0;
 memset(0, 0, array.length);
 freembuf(array.length + 1);
+
 init_ebur128_filter();
 
 @serialize
@@ -206,24 +280,35 @@ preamp_db != target_preamp_db ? (
   target_preamp_db = preamp_db;
   remaining_preamp_smp = total_preamp_smp;
 );
+lookahead_sec != current_lookahead_sec ? (
+  current_lookahead_sec = lookahead_sec;
+  lookahead_smp = max(floor(srate * current_lookahead_sec + 0.5), 0);
+  lookahead_buffer_len = lookahead_smp + 1;
+  pdc_delay = lookahead_smp;
+  array.length = array.lookahead + lookahead_buffer_len * (num_channels + 2);
+  offset.lookahead = 0;
+  freembuf(array.length + 1);
+  memset(array.lookahead, 0, array.length - array.lookahead);
+);
 reset_gain ? (
-  gain_db = 0;
   reset_gain = 0;
+  gain_db = 0;
   remaining_preamp_smp = 0;
-  memset(0, 0, array.length);
-  sliderchange(slider9);
+  memset(0, 0, array.mixed);
+  sliderchange(slider10);
 );
 
 @sample
 
 filter_signal();
 momentary_lufs = measure_momentary_loudness_lufs();
+push_lookahead_buffer();
 offset.unmixed += 1;
 offset.unmixed >= filter_length ? offset.unmixed = 0;
 offset.mixed += 1;
-offset.mixed >= buffer_length ? offset.mixed = 0;
-offset.measure += 1;
-offset.measure >= measure_interval ? offset.measure = 0;
+offset.mixed >= loudness_buffer_len ? offset.mixed = 0;
+offset.lookahead += 1;
+offset.lookahead >= lookahead_buffer_len ? offset.lookahead = 0;
 current_preamp_db = remaining_preamp_smp > 0 ? (
   remaining_preamp_smp -= 1;
   (start_preamp_db * remaining_preamp_smp + target_preamp_db * (total_preamp_smp - remaining_preamp_smp)) / total_preamp_smp
@@ -241,14 +326,7 @@ gain_db += diff_lu * min(
 gain_db = min(min(max(gain_db, -gain_limit_db), target_lufs + output_limit_lu - momentary_lufs - current_preamp_db), gain_limit_db);
 
 gain = pow(10, (current_preamp_db + gain_db) * 0.05);
-spl0 *= gain;
-spl1 *= gain;
-spl2 *= gain;
-spl3 *= gain;
-spl4 *= gain;
-spl5 *= gain;
-spl6 *= gain;
-spl7 *= gain;
+pop_lookahead_buffer(gain);
 
 @gfx 520 64
 
@@ -295,6 +373,8 @@ function gfx_rect_aa(x y x2 y2) local(
     );
     gfx_y += 1;
   );
+
+  0;
 );
 
 function gfx_shadow_aa(x y x2 y2 z outline) local(
@@ -341,6 +421,8 @@ function gfx_shadow_aa(x y x2 y2 z outline) local(
     );
     gfx_y += 1;
   );
+
+  0;
 );
 
 function db_to_pixel(db) (
@@ -402,7 +484,7 @@ gfx_set(0.167, 0.661, 0.457);
 gfx_rect_aa(min(gui_gain_px, gfx_w/2 - 0.625*gfx_ext_retina), gfx_h/2 - 8*gfx_ext_retina, max(gui_gain_px, gfx_w/2 + 0.625*gfx_ext_retina), gfx_h/2 + 12*gfx_ext_retina);
 
 gui_gate_px = db_to_pixel(gate_lufs - target_lufs + gain_db);
-gui_diff_px = db_to_pixel(momentary_lufs - target_lufs + current_preamp_db + gain_db);
+gui_diff_px = db_to_pixel(playhead_lufs - target_lufs + current_preamp_db + gain_db);
 gfx_shadow_aa(0, gfx_h/2 - 3*gfx_ext_retina, gui_diff_px, gfx_h/2 + 7*gfx_ext_retina, 2.5*gfx_ext_retina, 0.625*gfx_ext_retina);
 gfx_set(0.873);
 gfx_rect_aa(0, gfx_h/2 - 3*gfx_ext_retina, min(ceil(gui_gate_px), gui_diff_px), gfx_h/2 + 7*gfx_ext_retina);
