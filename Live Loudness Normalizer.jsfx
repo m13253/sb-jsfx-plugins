@@ -154,7 +154,6 @@ function pop_lookahead_buffer(gain) local(
     spl6 = 0;
     spl7 = 0;
     playhead_lufs = -inf;
-    TRACE += 1;
   );
 
   0;
